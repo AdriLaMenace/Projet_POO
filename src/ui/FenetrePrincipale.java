@@ -98,7 +98,52 @@ public class FenetrePrincipale extends JFrame {
         // Actions
         btnRafraichir.addActionListener(e -> rafraichirAdherents());
         
-        // TODO: Tu pourras coder le bouton Ajouter Adhérent ici (JDialog)
+        // --- ACTION : AJOUTER ADHÉRENT ---
+        btnAjouter.addActionListener(e -> {
+            // 1. Create a simple form using JTextFields
+            JTextField nomField = new JTextField();
+            JTextField prenomField = new JTextField();
+            JTextField emailField = new JTextField();
+
+            Object[] message = {
+                "Nom :", nomField,
+                "Prénom :", prenomField,
+                "Email / Tel :", emailField
+            };
+
+            // 2. Show the popup (Dialog)
+            int option = JOptionPane.showConfirmDialog(this, message, "Nouvel Adhérent", JOptionPane.OK_CANCEL_OPTION);
+
+            // 3. If User clicks OK
+            if (option == JOptionPane.OK_OPTION) {
+                try {
+                    // Generate a unique ID (Simple method for student project)
+                    String id = "ADH-" + System.currentTimeMillis(); 
+                    String nom = nomField.getText();
+                    String prenom = prenomField.getText();
+                    String coords = emailField.getText();
+
+                    if (!nom.isEmpty() && !prenom.isEmpty()) {
+                        // Create the object
+                        // Note: Assumes your Adherent constructor is (id, nom, prenom, coords, statut, penalite)
+                        // If your constructor is different, adjust parameters below.
+                        Adherent nouveau = new Adherent(id, nom, prenom, coords);
+                        
+                        // 4. Send to Manager -> DAO -> DB
+                        manager.ajouterAdherent(nouveau);
+                        
+                        // 5. Update the UI
+                        JOptionPane.showMessageDialog(this, "Adhérent ajouté avec succès !");
+                        rafraichirAdherents(); 
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Le nom et le prénom sont obligatoires.", "Erreur", JOptionPane.WARNING_MESSAGE);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Erreur lors de l'enregistrement : " + ex.getMessage());
+                }
+            }
+        });
         
         rafraichirAdherents();
         panel.add(toolbar, BorderLayout.NORTH);
