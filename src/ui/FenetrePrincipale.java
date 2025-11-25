@@ -69,6 +69,127 @@ public class FenetrePrincipale extends JFrame {
 
         // Actions
         btnRechercher.addActionListener(e -> rafraichirDocuments(champRecherche.getText()));
+
+        // --- ACTION : AJOUTER CD ---
+        btnAjouterCD.addActionListener(e -> {
+            // 1. Champs de saisie
+            JTextField titreField = new JTextField();
+            JTextField artisteField = new JTextField();
+            JTextField genreField = new JTextField();
+            JTextField dureeField = new JTextField();
+            JTextField pistesField = new JTextField();
+
+            Object[] message = {
+                "Titre de l'album :", titreField,
+                "Artiste principal :", artisteField,
+                "Genre musical :", genreField,
+                "Durée (minutes) :", dureeField,
+                "Nombre de pistes :", pistesField
+            };
+
+            // 2. Affichage
+            int option = JOptionPane.showConfirmDialog(this, message, "Nouveau CD", JOptionPane.OK_CANCEL_OPTION);
+
+            // 3. Validation et Création
+            if (option == JOptionPane.OK_OPTION) {
+                try {
+                    if (titreField.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "Le titre est obligatoire.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Génération ID unique
+                    String id = "CD-" + System.currentTimeMillis();
+                    
+                    // Conversion des chiffres (Attention aux erreurs de frappe)
+                    int duree = Integer.parseInt(dureeField.getText());
+                    int nbPistes = Integer.parseInt(pistesField.getText());
+
+                    // 4. Instanciation de l'objet CD (Correspond exactement à votre classe)
+                    CD nouveauCD = new CD(
+                        id,
+                        titreField.getText(),
+                        artisteField.getText(),
+                        genreField.getText(),
+                        duree,
+                        nbPistes
+                    );
+
+                    // 5. Sauvegarde via le Manager
+                    manager.ajouterDocument(nouveauCD);
+
+                    // 6. Feedback utilisateur
+                    JOptionPane.showMessageDialog(this, "CD ajouté avec succès !");
+                    rafraichirDocuments("");
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "La durée et le nombre de pistes doivent être des nombres entiers.", "Erreur de format", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
+                }
+            }
+        });
+
+        // --- ACTION : AJOUTER LIVRE (Corrigé avec Éditeur) ---
+        btnAjouterLivre.addActionListener(e -> {
+            // 1. Création des champs de saisie
+            JTextField titreField = new JTextField();
+            JTextField auteurField = new JTextField();
+            JTextField genreField = new JTextField();
+            JTextField isbnField = new JTextField();
+            JTextField pagesField = new JTextField();
+            JTextField editeurField = new JTextField(); // <--- NOUVEAU CHAMP
+
+            Object[] message = {
+                "Titre :", titreField,
+                "Auteur :", auteurField,
+                "Genre :", genreField,
+                "ISBN :", isbnField,
+                "Nombre de pages :", pagesField,
+                "Éditeur :", editeurField // <--- AJOUT DANS LE POPUP
+            };
+
+            // 2. Affichage du popup
+            int option = JOptionPane.showConfirmDialog(this, message, "Nouveau Livre", JOptionPane.OK_CANCEL_OPTION);
+
+            // 3. Traitement
+            if (option == JOptionPane.OK_OPTION) {
+                try {
+                    // Validation simple
+                    if (titreField.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "Le titre est obligatoire.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    String id = "LIV-" + System.currentTimeMillis();
+                    int nbPages = Integer.parseInt(pagesField.getText());
+
+                    // 4. Création de l'objet Livre avec les 7 ARGUMENTS
+                    Livre nouveauLivre = new Livre(
+                        id, 
+                        titreField.getText(), 
+                        auteurField.getText(), 
+                        genreField.getText(), 
+                        isbnField.getText(), 
+                        nbPages,
+                        editeurField.getText() // <--- ON PASSE L'ÉDITEUR ICI
+                    );
+
+                    // 5. Envoi au Manager
+                    manager.ajouterDocument(nouveauLivre);
+
+                    JOptionPane.showMessageDialog(this, "Livre ajouté avec succès !");
+                    rafraichirDocuments(""); 
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Le nombre de pages doit être un entier valid.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
+                }
+            }
+        });
         
         // Chargement initial
         rafraichirDocuments("");
