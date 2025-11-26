@@ -1,12 +1,11 @@
 package dao.sqlite;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-
 import bdd.C_ConnexionSQLite;
 import dao.DocumentDAO;
 import entites.*;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SQLiteDocumentDAO implements DocumentDAO {
 
@@ -90,10 +89,17 @@ public class SQLiteDocumentDAO implements DocumentDAO {
     @Override
     public List<Document> findByTitreOrAuteur(String critere) throws SQLException {
         List<Document> liste = new ArrayList<>();
-        String sql = "SELECT * FROM DOCUMENT WHERE titre LIKE ? OR auteur LIKE ?";
+        // On cherche partout : Titre, Auteur, ISBN, Genre, ID
+        String sql = "SELECT * FROM DOCUMENT WHERE titre LIKE ? OR auteur LIKE ? OR isbn LIKE ? OR genre LIKE ? OR id LIKE ?";
+        
         try (PreparedStatement pstmt = connexion.prepareStatement(sql)) {
-            pstmt.setString(1, "%" + critere + "%");
-            pstmt.setString(2, "%" + critere + "%");
+            String search = "%" + critere + "%";
+            pstmt.setString(1, search);
+            pstmt.setString(2, search);
+            pstmt.setString(3, search);
+            pstmt.setString(4, search);
+            pstmt.setString(5, search);
+            
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 liste.add(mapResultSetToDocument(rs));

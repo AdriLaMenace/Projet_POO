@@ -23,7 +23,7 @@ public class Emprunt {
         this.dateEmprunt = LocalDate.now(); // Date d'aujourd'hui
         // Calcul de la date de retour prévue (+3 semaines)
         this.dateRetourPrevue = this.dateEmprunt.plusWeeks(3); 
-        
+       
         this.dateRetourReelle = null; // En attente de retour
     }
 

@@ -1,13 +1,5 @@
 package service;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import bdd.C_ConnexionSQLite;
 import dao.AdherentDAO;
 import dao.DAOFactory;
@@ -17,6 +9,13 @@ import entites.Adherent;
 import entites.Document;
 import entites.E_StatutAdherent;
 import entites.Emprunt;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Cœur du système (Service Layer).
@@ -237,4 +236,9 @@ public class BibliothequeManager {
             return null;
         }
     }
+
+    public void supprimerDocument(String id) throws SQLException {
+        documentDAO.delete(id);
+    }
+    
 }

@@ -13,7 +13,8 @@ import service.BibliothequeManager;
 
 /**
  * La fenêtre principale de l'application (Vue).
- * Elle utilise Swing pour afficher des onglets et des tableaux.
+ * Utilise Swing pour l'interface graphique.
+ * Communique uniquement avec le BibliothequeManager (Contrôleur/Service).
  */
 public class FenetrePrincipale extends JFrame {
 
@@ -28,10 +29,10 @@ public class FenetrePrincipale extends JFrame {
         this.manager = manager;
 
         // Configuration de la fenêtre
-        setTitle("SGEB - Gestion de Bibliothèque");
-        setSize(1000, 700);
+        setTitle("SGEB - Système de Gestion de Bibliothèque");
+        setSize(1200, 750); // Taille ajustée pour bien voir les colonnes
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Centrer
+        setLocationRelativeTo(null); // Centrer à l'écran
 
         // Création des onglets
         onglets = new JTabbedPane();
@@ -43,103 +44,88 @@ public class FenetrePrincipale extends JFrame {
         this.add(onglets);
     }
 
-    // --- ONGLET 1 : DOCUMENTS ---
+    // =================================================================================
+    // ONGLET 1 : GESTION DES DOCUMENTS
+    // =================================================================================
     private JPanel createPanelDocuments() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // Barre d'outils (Haut)
+        // --- Barre d'outils (Haut) ---
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        
         JTextField champRecherche = new JTextField(20);
         JButton btnRechercher = new JButton("Rechercher");
+        
+        // Séparateur visuel
+        JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
+        
         JButton btnAjouterLivre = new JButton("Nouveau Livre");
         JButton btnAjouterCD = new JButton("Nouveau CD");
+        JButton btnSupprimer = new JButton("Supprimer"); // Bouton demandé par l'énoncé
 
-        toolbar.add(new JLabel("Recherche :"));
+        toolbar.add(new JLabel("Recherche (Titre, Auteur, ISBN, Genre) :"));
         toolbar.add(champRecherche);
         toolbar.add(btnRechercher);
-        toolbar.add(Box.createHorizontalStrut(20)); // Espace
+        toolbar.add(Box.createHorizontalStrut(15)); // Espace
         toolbar.add(btnAjouterLivre);
         toolbar.add(btnAjouterCD);
+        toolbar.add(btnSupprimer);
 
-        // Tableau (Centre)
-        String[] colonnes = {"ID", "Type", "Titre", "Auteur/Artiste", "Genre", "Détails", "Statut"};
-        modeleDocuments = new DefaultTableModel(colonnes, 0);
+        // --- Tableau (Centre) ---
+        // La colonne "Détails" affichera les infos spécifiques (ISBN pour livre, Durée pour CD)
+        String[] colonnes = {"ID", "Type", "Titre", "Auteur/Artiste", "Genre", "Détails (ISBN, Pages...)", "Statut"};
+        modeleDocuments = new DefaultTableModel(colonnes, 0) {
+            @Override // Rend les cellules non éditables directement
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
         tableDocuments = new JTable(modeleDocuments);
         JScrollPane scrollPane = new JScrollPane(tableDocuments);
 
-        // Actions
+        // --- ACTIONS ---
+
+        // 1. Recherche
         btnRechercher.addActionListener(e -> rafraichirDocuments(champRecherche.getText()));
 
-        // --- ACTION : AJOUTER CD ---
-        btnAjouterCD.addActionListener(e -> {
-            // 1. Champs de saisie
-            JTextField titreField = new JTextField();
-            JTextField artisteField = new JTextField();
-            JTextField genreField = new JTextField();
-            JTextField dureeField = new JTextField();
-            JTextField pistesField = new JTextField();
-
-            Object[] message = {
-                "Titre de l'album :", titreField,
-                "Artiste principal :", artisteField,
-                "Genre musical :", genreField,
-                "Durée (minutes) :", dureeField,
-                "Nombre de pistes :", pistesField
-            };
-
-            // 2. Affichage
-            int option = JOptionPane.showConfirmDialog(this, message, "Nouveau CD", JOptionPane.OK_CANCEL_OPTION);
-
-            // 3. Validation et Création
-            if (option == JOptionPane.OK_OPTION) {
-                try {
-                    if (titreField.getText().isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Le titre est obligatoire.", "Erreur", JOptionPane.ERROR_MESSAGE);
-                        return;
+        // 2. Supprimer un document
+        btnSupprimer.addActionListener(e -> {
+            int row = tableDocuments.getSelectedRow();
+            if (row >= 0) {
+                String idDoc = (String) modeleDocuments.getValueAt(row, 0);
+                String titre = (String) modeleDocuments.getValueAt(row, 2);
+                
+                int reponse = JOptionPane.showConfirmDialog(this, 
+                    "Voulez-vous vraiment supprimer le document '" + titre + "' ?", 
+                    "Confirmation de suppression", JOptionPane.YES_NO_OPTION);
+                
+                if (reponse == JOptionPane.YES_OPTION) {
+                    try {
+                        // Vérification métier avant suppression
+                        Document doc = manager.recupererDocumentParId(idDoc);
+                        if (doc != null && doc.estEmprunte()) {
+                            JOptionPane.showMessageDialog(this, "Impossible de supprimer : ce document est actuellement emprunté.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            manager.supprimerDocument(idDoc);
+                            JOptionPane.showMessageDialog(this, "Document supprimé avec succès.");
+                            rafraichirDocuments("");
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(this, "Erreur lors de la suppression : " + ex.getMessage());
                     }
-
-                    // Génération ID unique
-                    String id = "CD-" + System.currentTimeMillis();
-                    
-                    // Conversion des chiffres (Attention aux erreurs de frappe)
-                    int duree = Integer.parseInt(dureeField.getText());
-                    int nbPistes = Integer.parseInt(pistesField.getText());
-
-                    // 4. Instanciation de l'objet CD (Correspond exactement à votre classe)
-                    CD nouveauCD = new CD(
-                        id,
-                        titreField.getText(),
-                        artisteField.getText(),
-                        genreField.getText(),
-                        duree,
-                        nbPistes
-                    );
-
-                    // 5. Sauvegarde via le Manager
-                    manager.ajouterDocument(nouveauCD);
-
-                    // 6. Feedback utilisateur
-                    JOptionPane.showMessageDialog(this, "CD ajouté avec succès !");
-                    rafraichirDocuments("");
-
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(this, "La durée et le nombre de pistes doivent être des nombres entiers.", "Erreur de format", JOptionPane.ERROR_MESSAGE);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
                 }
+            } else {
+                JOptionPane.showMessageDialog(this, "Veuillez sélectionner une ligne à supprimer.");
             }
         });
 
-        // --- ACTION : AJOUTER LIVRE (Corrigé avec Éditeur) ---
+        // 3. Ajouter un Livre (Formulaire complet)
         btnAjouterLivre.addActionListener(e -> {
-            // 1. Création des champs de saisie
             JTextField titreField = new JTextField();
             JTextField auteurField = new JTextField();
             JTextField genreField = new JTextField();
             JTextField isbnField = new JTextField();
             JTextField pagesField = new JTextField();
-            JTextField editeurField = new JTextField(); // <--- NOUVEAU CHAMP
+            JTextField editeurField = new JTextField();
 
             Object[] message = {
                 "Titre :", titreField,
@@ -147,51 +133,70 @@ public class FenetrePrincipale extends JFrame {
                 "Genre :", genreField,
                 "ISBN :", isbnField,
                 "Nombre de pages :", pagesField,
-                "Éditeur :", editeurField // <--- AJOUT DANS LE POPUP
+                "Éditeur :", editeurField
             };
 
-            // 2. Affichage du popup
             int option = JOptionPane.showConfirmDialog(this, message, "Nouveau Livre", JOptionPane.OK_CANCEL_OPTION);
-
-            // 3. Traitement
             if (option == JOptionPane.OK_OPTION) {
                 try {
-                    // Validation simple
-                    if (titreField.getText().isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Le titre est obligatoire.", "Erreur", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
+                    if (titreField.getText().isEmpty()) throw new IllegalArgumentException("Le titre est obligatoire.");
+                    
                     String id = "LIV-" + System.currentTimeMillis();
-                    int nbPages = Integer.parseInt(pagesField.getText());
+                    int nbPages = Integer.parseInt(pagesField.getText()); // Peut lever NumberFormatException
 
-                    // 4. Création de l'objet Livre avec les 7 ARGUMENTS
-                    Livre nouveauLivre = new Livre(
-                        id, 
-                        titreField.getText(), 
-                        auteurField.getText(), 
-                        genreField.getText(), 
-                        isbnField.getText(), 
-                        nbPages,
-                        editeurField.getText() // <--- ON PASSE L'ÉDITEUR ICI
-                    );
-
-                    // 5. Envoi au Manager
+                    Livre nouveauLivre = new Livre(id, titreField.getText(), auteurField.getText(), genreField.getText(), 
+                                                   isbnField.getText(), nbPages, editeurField.getText());
+                    
                     manager.ajouterDocument(nouveauLivre);
-
-                    JOptionPane.showMessageDialog(this, "Livre ajouté avec succès !");
-                    rafraichirDocuments(""); 
-
+                    JOptionPane.showMessageDialog(this, "Livre ajouté !");
+                    rafraichirDocuments("");
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(this, "Le nombre de pages doit être un entier valid.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Le nombre de pages doit être un entier.", "Erreur de format", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
+                    JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-        
-        // Chargement initial
+
+        // 4. Ajouter un CD
+        btnAjouterCD.addActionListener(e -> {
+            JTextField titreField = new JTextField();
+            JTextField artisteField = new JTextField();
+            JTextField genreField = new JTextField();
+            JTextField dureeField = new JTextField();
+            JTextField pistesField = new JTextField();
+
+            Object[] message = {
+                "Titre album :", titreField,
+                "Artiste principal :", artisteField,
+                "Genre musical :", genreField,
+                "Durée (minutes) :", dureeField,
+                "Nombre de pistes :", pistesField
+            };
+
+            int option = JOptionPane.showConfirmDialog(this, message, "Nouveau CD", JOptionPane.OK_CANCEL_OPTION);
+            if (option == JOptionPane.OK_OPTION) {
+                try {
+                    if (titreField.getText().isEmpty()) throw new IllegalArgumentException("Le titre est obligatoire.");
+                    
+                    String id = "CD-" + System.currentTimeMillis();
+                    int duree = Integer.parseInt(dureeField.getText());
+                    int pistes = Integer.parseInt(pistesField.getText());
+
+                    CD nouveauCD = new CD(id, titreField.getText(), artisteField.getText(), genreField.getText(), duree, pistes);
+                    
+                    manager.ajouterDocument(nouveauCD);
+                    JOptionPane.showMessageDialog(this, "CD ajouté !");
+                    rafraichirDocuments("");
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "La durée et le nombre de pistes doivent être des entiers.", "Erreur de format", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        // Chargement initial des données
         rafraichirDocuments("");
 
         panel.add(toolbar, BorderLayout.NORTH);
@@ -199,11 +204,12 @@ public class FenetrePrincipale extends JFrame {
         return panel;
     }
 
-    // --- ONGLET 2 : ADHÉRENTS ---
+    // =================================================================================
+    // ONGLET 2 : GESTION DES ADHÉRENTS
+    // =================================================================================
     private JPanel createPanelAdherents() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // Barre d'outils
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton btnAjouter = new JButton("Nouvel Adhérent");
         JButton btnRafraichir = new JButton("Actualiser");
@@ -211,57 +217,36 @@ public class FenetrePrincipale extends JFrame {
         toolbar.add(btnAjouter);
         toolbar.add(btnRafraichir);
 
-        // Tableau
         String[] colonnes = {"ID", "Nom", "Prénom", "Coordonnées", "Statut", "Amende"};
-        modeleAdherents = new DefaultTableModel(colonnes, 0);
+        modeleAdherents = new DefaultTableModel(colonnes, 0) {
+            @Override public boolean isCellEditable(int row, int column) { return false; }
+        };
         tableAdherents = new JTable(modeleAdherents);
         
-        // Actions
         btnRafraichir.addActionListener(e -> rafraichirAdherents());
         
-        // --- ACTION : AJOUTER ADHÉRENT ---
+        // Action : Ajouter Adhérent
         btnAjouter.addActionListener(e -> {
-            // 1. Create a simple form using JTextFields
             JTextField nomField = new JTextField();
             JTextField prenomField = new JTextField();
-            JTextField emailField = new JTextField();
+            JTextField coordField = new JTextField();
 
-            Object[] message = {
-                "Nom :", nomField,
-                "Prénom :", prenomField,
-                "Email / Tel :", emailField
-            };
+            Object[] message = { "Nom :", nomField, "Prénom :", prenomField, "Email / Tel :", coordField };
 
-            // 2. Show the popup (Dialog)
             int option = JOptionPane.showConfirmDialog(this, message, "Nouvel Adhérent", JOptionPane.OK_CANCEL_OPTION);
-
-            // 3. If User clicks OK
             if (option == JOptionPane.OK_OPTION) {
                 try {
-                    // Generate a unique ID (Simple method for student project)
-                    String id = "ADH-" + System.currentTimeMillis(); 
-                    String nom = nomField.getText();
-                    String prenom = prenomField.getText();
-                    String coords = emailField.getText();
-
-                    if (!nom.isEmpty() && !prenom.isEmpty()) {
-                        // Create the object
-                        // Note: Assumes your Adherent constructor is (id, nom, prenom, coords, statut, penalite)
-                        // If your constructor is different, adjust parameters below.
-                        Adherent nouveau = new Adherent(id, nom, prenom, coords);
-                        
-                        // 4. Send to Manager -> DAO -> DB
-                        manager.ajouterAdherent(nouveau);
-                        
-                        // 5. Update the UI
-                        JOptionPane.showMessageDialog(this, "Adhérent ajouté avec succès !");
-                        rafraichirAdherents(); 
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Le nom et le prénom sont obligatoires.", "Erreur", JOptionPane.WARNING_MESSAGE);
-                    }
+                    if (nomField.getText().isEmpty() || prenomField.getText().isEmpty()) 
+                        throw new IllegalArgumentException("Nom et Prénom obligatoires.");
+                    
+                    String id = "ADH-" + System.currentTimeMillis();
+                    Adherent adh = new Adherent(id, nomField.getText(), prenomField.getText(), coordField.getText());
+                    
+                    manager.ajouterAdherent(adh);
+                    JOptionPane.showMessageDialog(this, "Adhérent ajouté avec succès !");
+                    rafraichirAdherents();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Erreur lors de l'enregistrement : " + ex.getMessage());
+                    JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
                 }
             }
         });
@@ -272,11 +257,12 @@ public class FenetrePrincipale extends JFrame {
         return panel;
     }
 
-    // --- ONGLET 3 : EMPRUNTS ---
+    // =================================================================================
+    // ONGLET 3 : EMPRUNTS & RETOURS
+    // =================================================================================
     private JPanel createPanelEmprunts() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        // Barre d'outils
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton btnEmprunter = new JButton("Enregistrer Emprunt");
         JButton btnRetourner = new JButton("Enregistrer Retour");
@@ -284,35 +270,35 @@ public class FenetrePrincipale extends JFrame {
         toolbar.add(btnEmprunter);
         toolbar.add(btnRetourner);
 
-        // Tableau
-        String[] colonnes = {"ID Emprunt", "Livre", "Adhérent", "Date Prêt", "Retour Prévu", "Retard ?"};
-        modeleEmprunts = new DefaultTableModel(colonnes, 0);
+        String[] colonnes = {"ID Emprunt", "Document", "Adhérent", "Date Prêt", "Retour Prévu", "Retard ?"};
+        modeleEmprunts = new DefaultTableModel(colonnes, 0) {
+            @Override public boolean isCellEditable(int row, int column) { return false; }
+        };
         tableEmprunts = new JTable(modeleEmprunts);
 
-        // --- ACTION : EMPRUNTER ---
+        // Action : Emprunter (Par ID)
         btnEmprunter.addActionListener(e -> {
-            // Boîte de dialogue simple pour saisir les IDs
             JTextField idAdhField = new JTextField();
             JTextField idDocField = new JTextField();
-            Object[] message = {"ID Adhérent:", idAdhField, "ID Document:", idDocField};
+            Object[] message = {"ID Adhérent (ex: ADH-001):", idAdhField, "ID Document (ex: LIV-001):", idDocField};
 
             int option = JOptionPane.showConfirmDialog(this, message, "Nouvel Emprunt", JOptionPane.OK_CANCEL_OPTION);
             if (option == JOptionPane.OK_OPTION) {
-            	try {
-                    // CORRECTION ICI : On cherche par ID, pas par titre !
+                try {
                     Adherent adh = manager.rechercherAdherent(idAdhField.getText());
+                    // Utilisation de la méthode qui cherche par ID précis
                     Document doc = manager.recupererDocumentParId(idDocField.getText());
 
                     if (adh != null && doc != null) {
                         boolean succes = manager.emprunter(adh, doc);
                         if (succes) {
                             JOptionPane.showMessageDialog(this, "Emprunt validé !");
-                            rafraichirTout();
+                            rafraichirTout(); // Met à jour tous les onglets
                         } else {
-                            JOptionPane.showMessageDialog(this, "Emprunt refusé (Document déjà pris ou Quota atteint).", "Erreur", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(this, "Emprunt refusé : Vérifiez le statut du document ou le quota de l'adhérent.", "Refus", JOptionPane.WARNING_MESSAGE);
                         }
                     } else {
-                        JOptionPane.showMessageDialog(this, "ID Adhérent ou ID Document introuvable.");
+                        JOptionPane.showMessageDialog(this, "ID Adhérent ou ID Document introuvable.", "Erreur", JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -320,13 +306,12 @@ public class FenetrePrincipale extends JFrame {
             }
         });
 
-        // --- ACTION : RETOURNER ---
+        // Action : Retourner
         btnRetourner.addActionListener(e -> {
             int row = tableEmprunts.getSelectedRow();
             if (row >= 0) {
-                // On récupère l'objet Emprunt caché dans la ligne (astuce : il faut le retrouver via le manager idéalement)
-                // Ici pour simplifier, on va recharger les emprunts du manager
                 List<Emprunt> encours = manager.listerEmpruntsEnCours();
+                // Sécurité : s'assurer que l'index correspond
                 if (row < encours.size()) {
                     Emprunt emp = encours.get(row);
                     manager.rendre(emp);
@@ -334,7 +319,7 @@ public class FenetrePrincipale extends JFrame {
                     rafraichirTout();
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt dans la liste.");
+                JOptionPane.showMessageDialog(this, "Veuillez sélectionner un emprunt dans la liste pour le rendre.");
             }
         });
 
@@ -344,7 +329,9 @@ public class FenetrePrincipale extends JFrame {
         return panel;
     }
 
-    // --- MÉTHODES DE RAFRAÎCHISSEMENT ---
+    // =================================================================================
+    // MÉTHODES DE RAFRAÎCHISSEMENT (Mise à jour des tableaux)
+    // =================================================================================
 
     private void rafraichirTout() {
         rafraichirDocuments("");
@@ -353,15 +340,36 @@ public class FenetrePrincipale extends JFrame {
     }
 
     private void rafraichirDocuments(String critere) {
-        modeleDocuments.setRowCount(0); // Vider la table
-        for (Document d : manager.rechercherDocuments(critere)) {
-            String type = (d instanceof Livre) ? "Livre" : (d instanceof CD) ? "CD" : "Autre";
+        modeleDocuments.setRowCount(0); // Vider le tableau
+        List<Document> resultats = manager.rechercherDocuments(critere);
+        
+        for (Document d : resultats) {
+            String type = "Autre";
             String details = "";
-            if(d instanceof Livre) details = ((Livre)d).getNombrePages() + " p.";
-            if(d instanceof CD) details = ((CD)d).getDureeMinutes() + " min.";
+
+            // Utilisation du polymorphisme et de instanceof pour formater l'affichage
+            if (d instanceof Livre) {
+                type = "Livre";
+                Livre l = (Livre) d;
+                // Affichage de l'ISBN demandé
+                details = "ISBN: " + l.getIsbn() + " | " + l.getNombrePages() + " p. | Ed: " + l.getEditeur();
+            } else if (d instanceof CD) {
+                type = "CD";
+                CD c = (CD) d;
+                details = c.getDureeMinutes() + " min | " + c.getNombrePistes() + " pistes";
+            } else if (d instanceof Magazine) {
+                type = "Magazine";
+                Magazine m = (Magazine) d;
+                details = "N°" + m.getNumero() + " (" + m.getPeriodicite() + ")";
+            }
             
             modeleDocuments.addRow(new Object[]{
-                d.getId(), type, d.getTitre(), d.getAuteur(), d.getGenre(), details,
+                d.getId(), 
+                type, 
+                d.getTitre(), 
+                d.getAuteur(), 
+                d.getGenre(), 
+                details,
                 d.estEmprunte() ? "Non Dispo" : "Dispo"
             });
         }
@@ -369,20 +377,15 @@ public class FenetrePrincipale extends JFrame {
 
     private void rafraichirAdherents() {
         try {
-            // 1. On vide la table
             modeleAdherents.setRowCount(0);
-            
-            // 2. On demande la liste au Manager (qui demande au DAO, qui demande à SQLite)
-            List<Adherent> liste = manager.listerAdherents(); 
-            
-            // 3. On remplit la table ligne par ligne
+            List<Adherent> liste = manager.listerAdherents();
             for (Adherent a : liste) {
                 modeleAdherents.addRow(new Object[]{
-                    a.getIdAdherent(),
-                    a.getNom(),
-                    a.getPrenom(),
-                    a.getCoordonnees(),
-                    a.getStatut(),
+                    a.getIdAdherent(), 
+                    a.getNom(), 
+                    a.getPrenom(), 
+                    a.getCoordonnees(), 
+                    a.getStatut(), 
                     a.getMontantPenalite() + " €"
                 });
             }
@@ -393,15 +396,16 @@ public class FenetrePrincipale extends JFrame {
 
     private void rafraichirEmprunts() {
         modeleEmprunts.setRowCount(0);
-        for (Emprunt e : manager.listerEmpruntsEnCours()) {
+        List<Emprunt> liste = manager.listerEmpruntsEnCours();
+        for (Emprunt e : liste) {
             boolean enRetard = LocalDate.now().isAfter(e.getDateRetourPrevue());
             modeleEmprunts.addRow(new Object[]{
-                e.getIdEmprunt(),
-                e.getDocumentEmprunte().getTitre(),
+                e.getIdEmprunt(), 
+                e.getDocumentEmprunte().getTitre(), 
                 e.getEmprunteur().getNom(),
-                e.getDateEmprunt(),
-                e.getDateRetourPrevue(),
-                enRetard ? "OUI" : "Non"
+                e.getDateEmprunt(), 
+                e.getDateRetourPrevue(), 
+                enRetard ? "RETARD !" : "Non"
             });
         }
     }
