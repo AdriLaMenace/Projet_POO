@@ -277,34 +277,80 @@ public class FenetrePrincipale extends JFrame {
         tableEmprunts = new JTable(modeleEmprunts);
 
         // Action : Emprunter (Par ID)
+        // --- ACTION : EMPRUNTER AVEC RECHERCHE ET FILTRE ---
         btnEmprunter.addActionListener(e -> {
-            JTextField idAdhField = new JTextField();
-            JTextField idDocField = new JTextField();
-            Object[] message = {"ID Adhérent (ex: ADH-001):", idAdhField, "ID Document (ex: LIV-001):", idDocField};
+            try {
+                // 1. Préparation des listes (String) pour la recherche
+                List<Adherent> tousAdherents = manager.listerAdherents();
+                List<Document> tousDocuments = manager.rechercherDocuments("");
 
-            int option = JOptionPane.showConfirmDialog(this, message, "Nouvel Emprunt", JOptionPane.OK_CANCEL_OPTION);
-            if (option == JOptionPane.OK_OPTION) {
-                try {
-                    Adherent adh = manager.rechercherAdherent(idAdhField.getText());
-                    // Utilisation de la méthode qui cherche par ID précis
-                    Document doc = manager.recupererDocumentParId(idDocField.getText());
-
-                    if (adh != null && doc != null) {
-                        boolean succes = manager.emprunter(adh, doc);
-                        if (succes) {
-                            JOptionPane.showMessageDialog(this, "Emprunt validé !");
-                            rafraichirTout(); // Met à jour tous les onglets
-                        } else {
-                            JOptionPane.showMessageDialog(this, "Emprunt refusé : Vérifiez le statut du document ou le quota de l'adhérent.", "Refus", JOptionPane.WARNING_MESSAGE);
-                        }
-                    } else {
-                        JOptionPane.showMessageDialog(this, "ID Adhérent ou ID Document introuvable.", "Erreur", JOptionPane.ERROR_MESSAGE);
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                // A. Préparer la liste des Adhérents (Texte "ID - Nom")
+                List<String> textesAdherents = new java.util.ArrayList<>();
+                for (Adherent a : tousAdherents) {
+                    // On peut ajouter une alerte visuelle si pénalité
+                    String penalite = (a.getMontantPenalite() > 0) ? " [AMENDE !]" : "";
+                    textesAdherents.add(a.getIdAdherent() + " - " + a.getNom() + " " + a.getPrenom() + penalite);
                 }
+
+                // B. Préparer la liste des Documents (UNIQUEMENT LES DISPONIBLES)
+                List<String> textesDocuments = new java.util.ArrayList<>();
+                for (Document d : tousDocuments) {
+                    // --- CORRECTION DEMANDÉE : On ne montre que les dispo ---
+                    if (!d.estEmprunte()) {
+                        textesDocuments.add(d.getId() + " - " + d.getTitre());
+                    }
+                }
+
+                if (textesAdherents.isEmpty() || textesDocuments.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Aucun adhérent ou aucun document disponible !");
+                    return;
+                }
+
+                // 2. Création des composants graphiques
+                JComboBox<String> comboAdh = new JComboBox<>();
+                JComboBox<String> comboDoc = new JComboBox<>();
+
+                // On utilise notre méthode "Helper" pour créer les panneaux avec recherche
+                JPanel panelAdh = creerPanelRecherche(textesAdherents, comboAdh);
+                JPanel panelDoc = creerPanelRecherche(textesDocuments, comboDoc);
+
+                // 3. Construction du message global
+                Object[] message = {
+                    "Sélectionner l'Adhérent :", panelAdh,
+                    "Sélectionner le Document :", panelDoc
+                };
+
+                // 4. Affichage
+                int option = JOptionPane.showConfirmDialog(this, message, "Nouvel Emprunt", JOptionPane.OK_CANCEL_OPTION);
+
+                // 5. Validation
+                if (option == JOptionPane.OK_OPTION) {
+                    String selAdh = (String) comboAdh.getSelectedItem();
+                    String selDoc = (String) comboDoc.getSelectedItem();
+
+                    if (selAdh != null && selDoc != null) {
+                        // Extraction des ID (tout ce qui est avant le " - ")
+                        String idAdh = selAdh.split(" - ")[0];
+                        String idDoc = selDoc.split(" - ")[0];
+
+                        Adherent adh = manager.rechercherAdherent(idAdh);
+                        Document doc = manager.recupererDocumentParId(idDoc);
+
+                        // Tentative d'emprunt
+                        if (manager.emprunter(adh, doc)) {
+                            JOptionPane.showMessageDialog(this, "Emprunt validé !");
+                            rafraichirTout();
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Erreur lors de l'emprunt (Quota ou Pénalité).");
+                        }
+                    }
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         });
+
 
         // Action : Retourner
         btnRetourner.addActionListener(e -> {
@@ -408,5 +454,48 @@ public class FenetrePrincipale extends JFrame {
                 enRetard ? "RETARD !" : "Non"
             });
         }
+    }
+
+    /**
+     * Crée un panneau contenant une barre de recherche et un menu déroulant filtrable.
+     * @param elements La liste complète des textes à afficher (Ex: "ID - Titre")
+     * @param comboBox Le JComboBox vide qui sera rempli/manipulé
+     * @return Le JPanel à afficher dans le popup
+     */
+    private JPanel creerPanelRecherche(List<String> elements, JComboBox<String> comboBox) {
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+        JTextField champRecherche = new JTextField(15);
+        
+        // Remplissage initial
+        for (String s : elements) comboBox.addItem(s);
+
+        // Ajout d'un écouteur sur le clavier : dès qu'on tape, on filtre !
+        champRecherche.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent e) {
+                String texte = champRecherche.getText().toLowerCase();
+                comboBox.removeAllItems(); // On vide tout
+                
+                for (String s : elements) {
+                    // Si le texte correspond à la recherche, on l'ajoute
+                    if (s.toLowerCase().contains(texte)) {
+                        comboBox.addItem(s);
+                    }
+                }
+                // Si la liste n'est pas vide, on ouvre le menu pour montrer les résultats
+                if (comboBox.getItemCount() > 0) {
+                    comboBox.showPopup();
+                }
+            }
+        });
+
+        JPanel haut = new JPanel(new BorderLayout());
+        haut.add(new JLabel("Filtrer (Nom/Titre) :"), BorderLayout.NORTH);
+        haut.add(champRecherche, BorderLayout.CENTER);
+
+        panel.add(haut, BorderLayout.NORTH);
+        panel.add(comboBox, BorderLayout.CENTER);
+        
+        return panel;
     }
 }
