@@ -23,7 +23,7 @@ public class Adherent {
     }
 
  
-     
+     // getteur setteur
     public String getIdAdherent() {
  
         return idAdherent; 
@@ -74,15 +74,15 @@ public class Adherent {
         if (montant > 0) {
              
             this.montantPenalite +=montant;
-            this.statut= E_StatutAdherent.AVEC_PENALITE; // le statut devient "AVEC PENALITE" ou le reste 
+            this.statut= E_StatutAdherent.AVEC_PENALITE ;//le statut devient "AVEC PENALITE" ou le reste 
         }
     }
     
     /**
-     * Méthode pour régler une pénalité (remet le montant à zéro et le statut à ACTIF si tout est payé).
+     * Méthode qui regle une pénalité : remet à 0 euros et le statut à ACTIF
      */
     public void reglerPenalite() {
-        this.montantPenalite = 0.0;
-        this.statut = E_StatutAdherent.ACTIF;
+        this.montantPenalite =0.0;
+        this.statut = E_StatutAdherent.ACTIF ;
     }
 }

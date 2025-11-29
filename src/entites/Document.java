@@ -1,46 +1,43 @@
 package entites;
 
-import java.util.Objects; // Nécessaire pour Objects.requireNonNull
+import java.util.Objects;
 
 /**
- * Classe abstraite représentant un document générique dans la bibliothèque.
- * Elle est la classe de base pour tous les types de documents (Livre, Magazine, CD...).
+ * classe abstraite pour document générique
+ * classe de base pour tous types de documents
  */
 public abstract class Document {
 
-    // Attributs communs à tous les documents
-    private final String id; // ID est final car il ne change pas après la création (bonne pratique TD3)
+    //ceci est commun à tous les documents
+    private final String id; //en final
     private String titre;
     private String auteur;
-    private String genre;
-    private boolean estEmprunte; 
+    private String genre ;
+    private boolean estEmprunte ; 
 
-    // Constructeur
     public Document(String id, String titre, String auteur, String genre) {
-        // Utilisation de Objects.requireNonNull pour la robustesse (vu en TD3)
-        this.id = Objects.requireNonNull(id, "L'ID ne peut pas être null.");
+        this.id= Objects.requireNonNull(id, "L'ID ne peut pas être null."); //pour robustesse
         this.titre = Objects.requireNonNull(titre, "Le titre ne peut pas être null.");
-        this.auteur = auteur; // L'auteur peut être null pour certains documents (ex: Magazine)
-        this.genre = genre;
+        this.auteur =auteur; //on met comme si ça pouvait êrte NULL
+        this.genre= genre;
         this.estEmprunte = false;
     }
 
-    // Méthode abstraite pour forcer l'affichage des détails spécifiques à chaque type
+    //méthode abstraite pour affichage
     public abstract void afficherDetailsSpecifiques(); 
 
-
-    // --- Getters et Setters ---
     
     public String getId() {
-        return id;
+        return id; 
+
     }
 
     public String getTitre() {
-        return titre;
+        return titre ;
     }
 
     public void setTitre(String titre) {
-        this.titre = titre;
+        this.titre =titre;
     }
 
     public String getAuteur() {
@@ -48,7 +45,7 @@ public abstract class Document {
     }
 
     public void setAuteur(String auteur) {
-        this.auteur = auteur;
+        this.auteur= auteur;
     }
 
     public String getGenre() {
@@ -56,14 +53,15 @@ public abstract class Document {
     }
 
     public void setGenre(String genre) {
-        this.genre = genre;
+        this.genre =genre;
     }
 
     public boolean estEmprunte() {
         return estEmprunte;
+        
     }
 
     public void setEstEmprunte(boolean estEmprunte) {
-        this.estEmprunte = estEmprunte;
+        this.estEmprunte= estEmprunte;
     }
 }
