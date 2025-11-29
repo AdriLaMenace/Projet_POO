@@ -4,11 +4,8 @@ import entites.Document;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Interface DAO spécifique aux documents.
- */
 public interface DocumentDAO extends GenericDAO<Document> {
-    // Méthodes spécifiques au document
-    List<Document> findByTitreOrAuteur(String critere) throws SQLException;
+    // Nouvelle méthode de recherche avec le type (LIVRE, CD, TOUT)
+    List<Document> findByCriteria(String critere, String typeDoc) throws SQLException;
     int countTotalDocuments() throws SQLException;
 }

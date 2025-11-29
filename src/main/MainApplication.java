@@ -1,11 +1,10 @@
 package main;
 
+import entites.Adherent;
+import entites.CD;
+import entites.Livre;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-
-import entites.Adherent;
-import entites.Livre;
-import entites.CD;
 import service.BibliothequeManager;
 import ui.FenetrePrincipale;
 
@@ -21,7 +20,7 @@ public class MainApplication {
 
         // 2. (Optionnel) On ajoute des données de test si c'est vide
         // Cela permet d'avoir une démo prête pour la soutenance
-        if (manager.rechercherDocuments("").isEmpty()) {
+        if (manager.rechercherDocuments("", "TOUT").isEmpty()) {
             peuplerBaseDeDonnees(manager);
         }
 

@@ -184,16 +184,14 @@ public class BibliothequeManager {
         adherentDAO.save(a);
     }
 
-    public List<Document> rechercherDocuments(String critere) {
+    // Remplace l'ancienne méthode rechercherDocuments par celle-ci :
+    public List<Document> rechercherDocuments(String critere, String type) {
         try {
-            // Si critère vide, on renvoie tout, sinon on cherche
-            if (critere == null || critere.isEmpty()) {
-                return documentDAO.findAll();
-            }
-            return documentDAO.findByTitreOrAuteur(critere);
+            String typeFiltre = (type == null) ? "TOUT" : type;
+            return documentDAO.findByCriteria(critere, typeFiltre);
         } catch (SQLException e) {
             e.printStackTrace();
-            return List.of(); // Retourne liste vide en cas d'erreur
+            return List.of();
         }
     }
     
@@ -239,6 +237,28 @@ public class BibliothequeManager {
 
     public void supprimerDocument(String id) throws SQLException {
         documentDAO.delete(id);
+    }
+    
+    // --- NOUVELLES MÉTHODES POUR CONFORMITÉ 100% ---
+
+    public void modifierDocument(Document d) throws SQLException {
+        documentDAO.update(d);
+    }
+
+    public void modifierAdherent(Adherent a) throws SQLException {
+        adherentDAO.update(a);
+    }
+
+    /**
+     * Récupère TOUS les emprunts d'un adhérent (en cours + passés) pour l'historique.
+     */
+    public List<Emprunt> recupererHistorique(Adherent a) {
+        try {
+            return empruntDAO.findByAdherent(a);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return List.of();
+        }
     }
     
 }
