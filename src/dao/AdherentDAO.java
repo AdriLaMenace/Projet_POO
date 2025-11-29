@@ -1,12 +1,12 @@
 package dao;
 
-import entites.Adherent;
 import java.sql.SQLException;
 
+import entites.Adherent;
+
 /**
- * Interface DAO spécifique aux adhérents.
+ * interface dao pour adhérents.
  */
-public interface AdherentDAO extends GenericDAO<Adherent> {
-    // Méthodes spécifiques à l'adhérent, si nécessaire
-    Adherent findByNom(String nom) throws SQLException;
+public interface AdherentDAO extends GenericDAO<Adherent > {
+    Adherent findByNom(String nom ) throws SQLException;
 }

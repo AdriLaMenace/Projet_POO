@@ -5,62 +5,63 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * Gère la connexion à la base de données SQLite (bibliotheque.db).
- * Utilise le pattern Singleton (vu en cours) pour garantir qu'une seule
- * instance de connexion soit active dans l'application.
+ * s'occupe de la connexion avec la bdd 
+ * on utilise ici les singleton
  */
 public class C_ConnexionSQLite {
 
-    // Chemin d'accès au fichier de la base de données.
     private static final String URL = "jdbc:sqlite:bibliotheque.db";
 
-    // L'unique instance de la connexion (Singleton).
+    //singleton
     private static Connection connexion = null;
 
     /**
-     * Constructeur privé pour empêcher l'instanciation directe (Singleton).
+     * empeche l'instanciation directe
      */
     private C_ConnexionSQLite() {
     }
 
     /**
-     * Point d'accès global pour obtenir la connexion.
-     * @return L'instance Connection, créée si elle n'existe pas.
+     * la connexion.
+     * return l'instance Connection
      */
     public static Connection getInstance() {
-        if (connexion == null) {
+        if (connexion ==null) {
             try {
-                // AJOUTE CETTE LIGNE ICI :
-                // Elle force le chargement du pilote SQLite en mémoire
+                
                 Class.forName("org.sqlite.JDBC");
 
-                // Établissement de la connexion.
+                //la connexion
                 connexion = DriverManager.getConnection(URL);
-                System.out.println("BDD-INFO: Connexion SQLite établie.");
+                System.out.println(" la connexion SQLite vient tout juste d'etre établie ");
             
             } catch (ClassNotFoundException e) {
-                System.err.println("ERREUR: Pilote SQLite introuvable ! Vérifiez le Build Path.");
-                e.printStackTrace();
+                System.err.println("ERREUR : introuvable !");
+                e.printStackTrace() ;
+
             } catch (SQLException e) {
-                System.err.println("ERREUR BDD: Impossible d'établir la connexion.");
-                e.printStackTrace();
+
+                System.err.println("ERREUR BDD : Impossible de faire la connexion !! ");
+                e.printStackTrace() ; 
             }
         }
         return connexion;
     }
 
     /**
-     * Ferme proprement la connexion à la fin du programme.
+     * on ferme à la fin du programme
      */
     public static void fermer() {
-        if (connexion != null) {
+        if (connexion !=null) {
             try {
-                connexion.close();
-                connexion = null;
-                System.out.println("BDD-INFO: Connexion SQLite fermée.");
+                connexion.close(); 
+                connexion =null;
+                System.out.println("Connexion fermée ") ;
+
             } catch (SQLException e) {
-                System.err.println("ERREUR BDD: Échec de la fermeture de la connexion.");
-                e.printStackTrace();
+                System.err.println("ERREUR BDD : échec de la fermeture de la connexion !!");
+                e.printStackTrace() ; 
+                 
             }
         }
     }

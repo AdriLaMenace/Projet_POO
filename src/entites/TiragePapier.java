@@ -5,7 +5,7 @@ package entites;
  */
 public interface TiragePapier {
     
-    // Attributs et méthodes pour documents imprimés
+    //les attributs
     int getNombrePages();
     String getEditeur();
 }

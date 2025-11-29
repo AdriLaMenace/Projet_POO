@@ -4,29 +4,30 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import service.BibliothequeManager;
-import ui.FenetreLogin; // On importe la nouvelle fenêtre
+import ui.FenetreLogin; 
 
 public class MainApplication {
 
     public static void main(String[] args) {
         
-        BibliothequeManager manager = new BibliothequeManager();
+        BibliothequeManager manager =new BibliothequeManager();
 
-        // On lance l'interface graphique
+        //lancement de l'interface graphique
         SwingUtilities.invokeLater(() -> {
             try {
-                // Look Nimbus pour que ce soit joli
+                
                 for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                    if ("Nimbus".equals(info.getName())) {
+                    if ("Nimbus".equals(info.getName())) { // on utilise Nimbus : rendu sympa et pro
                         UIManager.setLookAndFeel(info.getClassName());
                         break;
                     }
                 }
             } catch (Exception e) {}
             
-            // CHANGEMENT ICI : On lance la fenêtre de Login
-            FenetreLogin login = new FenetreLogin(manager);
-            login.setVisible(true);
+            
+            FenetreLogin login= new FenetreLogin(manager ); //lancement login
+            login.setVisible(true) ;
+             
         });
     }
 }

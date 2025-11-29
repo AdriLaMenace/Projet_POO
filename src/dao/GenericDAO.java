@@ -4,15 +4,20 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * Interface générique pour les opérations CRUD de base.
- * Le type T représente l'Entité (Adherent, Document, Emprunt).
+ * ici un interface générique pour les opérations CRUD
+ * le type T sert pour les entité comme Adherent, doc, emprunt
  */
 public interface GenericDAO<T> {
 
-    // On déclare que toutes les opérations de BDD peuvent lancer une exception SQL (vu en TD4)
+    // toutes opé de bdd peuvent lancer une exception SQL, comme vu au td4
+
     void save(T entity) throws SQLException;
-    T findById(String id) throws SQLException;
-    List<T> findAll() throws SQLException;
+
+    T findById(String id ) throws SQLException;
+    List<T > findAll() throws SQLException;
+
+ 
     void update(T entity) throws SQLException;
-    void delete(String id) throws SQLException;
+    void delete(String id) throws SQLException ;
+     
 }

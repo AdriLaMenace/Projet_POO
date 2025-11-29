@@ -1,11 +1,11 @@
 package entites;
 
 /**
- * Interface pour les supports numériques (CD, DVD, etc...).
+ * Interface pour les supports numériques
  */
 public interface SupportMultimedia {
     
-    // Attributs et méthodes pour audio/vidéo
+    //les attributs 
     int getDureeMinutes();
     int getNombrePistes();
 }

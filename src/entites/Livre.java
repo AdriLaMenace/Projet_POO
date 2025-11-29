@@ -1,7 +1,7 @@
 package entites;
 
 /**
- * Représente un Livre. C'est un Document qui est un TiragePapier.
+ * Représente un Livre : Document qui est un TiragePapier.
  */
 public class Livre extends Document implements TiragePapier {
 
@@ -31,7 +31,7 @@ public class Livre extends Document implements TiragePapier {
     // Imp méthode abstraite de Document
     @Override
     public void afficherDetailsSpecifiques() {
-        System.out.println("ISBN: " + isbn + ", Pages: " + nombrePages + ", Éditeur: " + editeur);
+        System.out.println("l'ISBN : " + isbn + ", pages : " + nombrePages + ", l'editeur : " + editeur);
     }
     
     // Getters et Setters
