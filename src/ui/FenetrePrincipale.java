@@ -214,7 +214,7 @@ public class FenetrePrincipale extends JFrame {
                         // Sinon : 
                         rafraichirAdherents("", "TOUT"); 
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, "Erreur : Impossible de supprimer (vérifiez s'il a des emprunts).");
+                        JOptionPane.showMessageDialog(this, "Erreur : Impossible de supprimer (vérifiez s'il a des emprunts)");
                     }
                 }
             } else {
@@ -352,7 +352,7 @@ public class FenetrePrincipale extends JFrame {
             try {
                 manager.ajouterDocument(new Livre("LIV-"+System.currentTimeMillis(), t1.getText(), t2.getText(), t3.getText(), t4.getText(), Integer.parseInt(t5.getText()), t6.getText()));
                 rafraichirTout();
-            } catch(Exception e) { JOptionPane.showMessageDialog(this, "Erreur: "+e.getMessage()); }
+            } catch(Exception e) { JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout : Vérifiez que les données sont valides svpp", "Erreur de saisie", JOptionPane.ERROR_MESSAGE); }
         }
     }
     
@@ -362,7 +362,7 @@ public class FenetrePrincipale extends JFrame {
             try {
                 manager.ajouterDocument(new CD("CD-"+System.currentTimeMillis(), t1.getText(), t2.getText(), t3.getText(), Integer.parseInt(t4.getText()), Integer.parseInt(t5.getText())));
                 rafraichirTout();
-            } catch(Exception e) { JOptionPane.showMessageDialog(this, "Erreur: "+e.getMessage()); }
+            } catch(Exception e) { JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout : Vérifiez que les données sont valides svpp", "Erreur de saisie", JOptionPane.ERROR_MESSAGE);  }
         }
     }
 
@@ -372,7 +372,7 @@ public class FenetrePrincipale extends JFrame {
             try {
                 manager.ajouterDocument(new Magazine("MAG-"+System.currentTimeMillis(), t1.getText(), null, t2.getText(), Integer.parseInt(t3.getText()), t4.getText(), Integer.parseInt(t5.getText()), t6.getText()));
                 rafraichirTout();
-            } catch(Exception e) { JOptionPane.showMessageDialog(this, "Erreur: "+e.getMessage()); }
+            } catch(Exception e) { JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout : Vérifiez que les données sont valides svpp", "Erreur de saisie", JOptionPane.ERROR_MESSAGE);  }
         }
     }
 
@@ -382,7 +382,7 @@ public class FenetrePrincipale extends JFrame {
             try {
                 manager.ajouterAdherent(new Adherent("ADH-"+System.currentTimeMillis(), t1.getText(), t2.getText(), t3.getText()));
                 rafraichirTout();
-            } catch(Exception e) { JOptionPane.showMessageDialog(this, "Erreur: "+e.getMessage()); }
+            } catch(Exception e) { JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout : Vérifiez que les données sont valides svpp", "Erreur de saisie", JOptionPane.ERROR_MESSAGE); }
         }
     }
 
@@ -397,7 +397,7 @@ public class FenetrePrincipale extends JFrame {
                 a.setNom(t1.getText()); a.setPrenom(t2.getText()); a.setCoordonnees(t3.getText());
                 manager.modifierAdherent(a);
                 rafraichirTout();
-            } catch(Exception e) { JOptionPane.showMessageDialog(this, "Erreur modif."); }
+            } catch(Exception e) { JOptionPane.showMessageDialog(this, "Erreur modif"); }
         }
     }
 
