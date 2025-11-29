@@ -3,6 +3,7 @@ package dao;
 import dao.sqlite.SQLiteAdherentDAO;
 import dao.sqlite.SQLiteDocumentDAO;
 import dao.sqlite.SQLiteEmpruntDAO;
+import dao.sqlite.SQLiteUtilisateurDAO;
 
 /**
  * Fabrique pour instancier les DAO.
@@ -24,4 +25,8 @@ public class DAOFactory {
     public static EmpruntDAO getEmpruntDAO() {
         return new SQLiteEmpruntDAO();
     }
+
+    public static UtilisateurDAO getUtilisateurDAO() {
+            return new SQLiteUtilisateurDAO();
+        }
 }

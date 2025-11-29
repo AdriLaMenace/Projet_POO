@@ -1,5 +1,13 @@
 package service;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import bdd.C_ConnexionSQLite;
 import dao.AdherentDAO;
 import dao.DAOFactory;
@@ -9,13 +17,7 @@ import entites.Adherent;
 import entites.Document;
 import entites.E_StatutAdherent;
 import entites.Emprunt;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.stream.Collectors;
+import entites.Utilisateur;
 
 /**
  * Cœur du système (Service Layer).
@@ -28,6 +30,7 @@ public class BibliothequeManager {
     private AdherentDAO adherentDAO = DAOFactory.getAdherentDAO();
     private DocumentDAO documentDAO = DAOFactory.getDocumentDAO();
     private EmpruntDAO empruntDAO = DAOFactory.getEmpruntDAO();
+    private dao.UtilisateurDAO utilisateurDAO = DAOFactory.getUtilisateurDAO();
 
     /**
      * Constructeur : Initialise la BDD au démarrage.
@@ -79,6 +82,13 @@ public class BibliothequeManager {
                                 "FOREIGN KEY(id_document) REFERENCES DOCUMENT(id), " +
                                 "FOREIGN KEY(id_adherent) REFERENCES ADHERENT(id))";
             stmt.execute(sqlEmprunt);
+
+            // 4. Table UTILISATEUR
+            String sqlUser = "CREATE TABLE IF NOT EXISTS UTILISATEUR (" +
+                             "identifiant TEXT PRIMARY KEY, " +
+                             "mot_de_passe TEXT NOT NULL)";
+            stmt.execute(sqlUser);
+            
 
             System.out.println("MANAGER: Tables de la base de données vérifiées/créées.");
 
@@ -259,6 +269,32 @@ public class BibliothequeManager {
             e.printStackTrace();
             return List.of();
         }
+    }
+
+    public boolean inscrire(String identifiant, String mdp) {
+        try {
+            if (utilisateurDAO.findById(identifiant) != null) {
+                System.out.println("Erreur: Identifiant déjà pris.");
+                return false;
+            }
+            utilisateurDAO.create(new Utilisateur(identifiant, mdp));
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean seConnecter(String identifiant, String mdp) {
+        try {
+            Utilisateur u = utilisateurDAO.findById(identifiant);
+            if (u != null && u.getMotDePasse().equals(mdp)) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
     
 }
