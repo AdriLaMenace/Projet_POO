@@ -27,6 +27,9 @@
         Modifier un adhérent : Mise à jour des informations personnelles.
 
 
+        Supprimer un adhérent : Retrait d'un adhérent du système
+
+
         Consulter l'historique : Visualisation de la liste des emprunts passés et actuels d'un adhérent.
 
 
@@ -66,3 +69,4 @@
 
 
         Identifier les retards : Génération des alertes pour les emprunts ayant dépassé la date limite.
+
