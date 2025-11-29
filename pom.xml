@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.univ.sgeb</groupId>
-    <artifactId>Nom_Prenom</artifactId> <version>1.0-SNAPSHOT</version>
+    <artifactId>Branchu_Castan</artifactId> <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -14,7 +14,9 @@
     </properties>
 
     <build>
+        <finalName>Branchu_Castan</finalName> 
         <sourceDirectory>src</sourceDirectory>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
