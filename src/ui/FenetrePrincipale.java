@@ -78,6 +78,7 @@ public class FenetrePrincipale extends JFrame {
         JTextField champRecherche = new JTextField(12);
         comboTypeDoc = new JComboBox<>(new String[]{"TOUT", "LIVRE", "CD", "MAGAZINE"});
         
+
         JButton btnRech = new JButton("🔍 Rechercher");
         JButton btnAddLivre = new JButton("＋Livre");
         JButton btnAddCD = new JButton("＋CD");
@@ -88,7 +89,7 @@ public class FenetrePrincipale extends JFrame {
         toolbar.add(new JLabel("Rech:")); toolbar.add(champRecherche); toolbar.add(comboTypeDoc); toolbar.add(btnRech);
         toolbar.add(Box.createHorizontalStrut(15));
         toolbar.add(btnAddLivre); toolbar.add(btnAddCD); toolbar.add(btnAddMag);
-        toolbar.add(btnModif); toolbar.add(btnSuppr);
+        toolbar.add(btnModif); toolbar.add(btnSuppr); 
 
         String[] cols = {"ID", "Type", "Titre", "Auteur/Artiste", "Genre", "ISBN", "Détails (Pages/Durée/Num)", "Statut"};
         modeleDocuments = new DefaultTableModel(cols, 0) { public boolean isCellEditable(int r, int c) { return false; } };
@@ -112,6 +113,7 @@ public class FenetrePrincipale extends JFrame {
             } else JOptionPane.showMessageDialog(this, "Sélectionnez une ligne.");
         });
 
+        
         // ACTION MODIFIER (LE CODE EST LÀ MAINTENANT)
         btnModif.addActionListener(e -> {
             int row = tableDocuments.getSelectedRow();
@@ -128,10 +130,12 @@ public class FenetrePrincipale extends JFrame {
         btnAddCD.addActionListener(e -> ajouterCD());
         btnAddMag.addActionListener(e -> ajouterMagazine());
 
+        
         rafraichirDocuments("", "TOUT");
         panel.add(toolbar, BorderLayout.NORTH);
         panel.add(new JScrollPane(tableDocuments), BorderLayout.CENTER);
         return panel;
+
     }
 
     // =================================================================================
@@ -150,13 +154,15 @@ public class FenetrePrincipale extends JFrame {
         JButton btnAdd = new JButton("＋ Adhérent");
         JButton btnModif = new JButton("✎ Modifier");
         JButton btnHist = new JButton("📜 Historique");
+        JButton btnSuppr = new JButton("Supprimer");
         JButton btnRefresh = new JButton("Actualiser");
+        JButton btnPayer = new JButton("💰 Régler Dettes");
 
         toolbar.add(new JLabel("Nom/ID:")); toolbar.add(champRech); 
         toolbar.add(new JLabel("Filtre:")); toolbar.add(comboStatutAdh);
         toolbar.add(btnRech);
         toolbar.add(Box.createHorizontalStrut(10));
-        toolbar.add(btnAdd); toolbar.add(btnModif); toolbar.add(btnHist); toolbar.add(btnRefresh);
+        toolbar.add(btnAdd); toolbar.add(btnModif); toolbar.add(btnHist); toolbar.add(btnSuppr); toolbar.add(btnRefresh); toolbar.add(btnPayer);
 
         String[] cols = {"ID", "Nom", "Prénom", "Coordonnées", "Statut", "Amende"};
         modeleAdherents = new DefaultTableModel(cols, 0) { public boolean isCellEditable(int r, int c) { return false; } };
@@ -186,6 +192,60 @@ public class FenetrePrincipale extends JFrame {
                 Adherent a = manager.rechercherAdherent(id);
                 afficherHistorique(a);
             } else JOptionPane.showMessageDialog(this, "Sélectionnez un adhérent.");
+        });
+
+        // Action Supprimer
+        btnSuppr.addActionListener(e -> {
+            int row = tableAdherents.getSelectedRow();
+            if (row >= 0) {
+                String id = (String) modeleAdherents.getValueAt(row, 0);
+                String nom = (String) modeleAdherents.getValueAt(row, 1);
+                
+                int rep = JOptionPane.showConfirmDialog(this, 
+                    "Supprimer l'adhérent " + nom + " ?", 
+                    "Confirmation", JOptionPane.YES_NO_OPTION);
+                
+                if (rep == JOptionPane.YES_OPTION) {
+                    try {
+                        manager.supprimerAdherent(id);
+                        JOptionPane.showMessageDialog(this, "Adhérent supprimé.");
+                        // Rafraîchir la liste (utilise ta méthode de rafraichissement habituelle)
+                        // Si tu as 'actionRefresh', utilise : actionRefresh.run();
+                        // Sinon : 
+                        rafraichirAdherents("", "TOUT"); 
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this, "Erreur : Impossible de supprimer (vérifiez s'il a des emprunts).");
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Sélectionnez une ligne.");
+            }
+        });
+
+        btnPayer.addActionListener(e -> {
+            int row = tableAdherents.getSelectedRow();
+            if (row >= 0) {
+                String id = (String) modeleAdherents.getValueAt(row, 0);
+                Adherent a = manager.rechercherAdherent(id);
+            
+                if (a.getMontantPenalite() > 0) {
+                    int rep = JOptionPane.showConfirmDialog(this, 
+                        "L'adhérent doit " + a.getMontantPenalite() + " €.\nA-t-il réglé cette somme ?", 
+                        "Règlement", JOptionPane.YES_NO_OPTION);
+                
+                    if (rep == JOptionPane.YES_OPTION) {
+                        try {
+                            manager.reglerPenalite(a); // Appel au manager
+                            JOptionPane.showMessageDialog(this, "Dette réglée. Compte réactivé !");
+                            actionRefresh.run(); // Rafraîchir le tableau
+                        } catch (Exception ex) { ex.printStackTrace(); }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "Cet adhérent n'a aucune dette.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Sélectionnez un adhérent.");
+            }
         });
 
         actionRefresh.run();

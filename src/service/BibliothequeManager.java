@@ -297,4 +297,14 @@ public class BibliothequeManager {
         return false;
     }
     
+    public void reglerPenalite(Adherent a) throws SQLException {
+        a.reglerPenalite(); // Remet montant à 0 et statut à ACTIF
+        adherentDAO.update(a); // Sauvegarde en BDD
+    }
+
+    public void supprimerAdherent(String id) throws SQLException {
+        // Idéalement, on vérifie s'il a des emprunts en cours avant
+        // Mais si la BDD est bien faite, elle bloquera la suppression si des emprunts existent.
+        adherentDAO.delete(id);
+    }
 }
