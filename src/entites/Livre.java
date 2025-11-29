@@ -11,13 +11,13 @@ public class Livre extends Document implements TiragePapier {
 
     // Constructeur principal
     public Livre(String id, String titre, String auteur, String genre, String isbn, int nombrePages, String editeur) {
-        super(id, titre, auteur, genre); // Appel au constructeur de la classe mère
+        super(id, titre, auteur, genre); // Appel constr de la classe mère
         this.isbn = isbn;
-        this.nombrePages = nombrePages;
-        this.editeur = editeur;
+        this.nombrePages =nombrePages;
+        this.editeur= editeur;
     }
 
-    // Implémentation des méthodes de l'interface TiragePapier
+    // Imp des méthodes de l'interface
     @Override
     public int getNombrePages() {
         return nombrePages;
@@ -28,13 +28,13 @@ public class Livre extends Document implements TiragePapier {
         return editeur;
     }
 
-    // Implémentation de la méthode abstraite de Document
+    // Imp méthode abstraite de Document
     @Override
     public void afficherDetailsSpecifiques() {
         System.out.println("ISBN: " + isbn + ", Pages: " + nombrePages + ", Éditeur: " + editeur);
     }
     
-    // Getters et Setters spécifiques
+    // Getters et Setters
     public String getIsbn() {
         return isbn;
     }

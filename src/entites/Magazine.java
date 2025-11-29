@@ -7,11 +7,11 @@ public class Magazine extends Document implements TiragePapier {
 
     private int numero;
     private String periodicite;
-    private int nombrePages; // Spécifique au numéro
-    private String editeur; // L'éditeur du magazine
+    private int nombrePages; // Specifique au numero
+    private String editeur; // editeur du magazine
 
     public Magazine(String id, String titre, String auteur, String genre, int numero, String periodicite, int nombrePages, String editeur) {
-        // L'auteur est souvent nul pour un magazine
+        // L'auteur peut-etre nul pour un magazine
         super(id, titre, auteur, genre); 
         this.numero = numero;
         this.periodicite = periodicite;
@@ -19,7 +19,7 @@ public class Magazine extends Document implements TiragePapier {
         this.editeur = editeur;
     }
 
-    // Implémentation des méthodes de l'interface TiragePapier
+    // Imp des méthodes de l'interface 
     @Override
     public int getNombrePages() {
         return nombrePages;
@@ -30,13 +30,13 @@ public class Magazine extends Document implements TiragePapier {
         return editeur;
     }
 
-    // Implémentation de la méthode abstraite de Document
+    // Imp méthode abstraite de Document
     @Override
     public void afficherDetailsSpecifiques() {
         System.out.println("Numéro: " + numero + ", Périodicité: " + periodicite + ", Pages: " + nombrePages);
     }
 
-    // Getters et Setters spécifiques
+    // Getters et Setters 
     public int getNumero() {
         return numero;
     }

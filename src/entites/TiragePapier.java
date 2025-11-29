@@ -1,11 +1,11 @@
 package entites;
 
 /**
- * Interface pour les documents qui ont une structure physique papier.
+ * Interface pour les documents en papier (avec des pages)
  */
 public interface TiragePapier {
     
-    // Attributs/Méthodes spécifiques aux documents imprimés
+    // Attributs et méthodes pour documents imprimés
     int getNombrePages();
     String getEditeur();
 }

@@ -22,7 +22,7 @@ public class SQLiteAdherentDAO implements AdherentDAO {
             pstmt.setString(2, adherent.getNom());
             pstmt.setString(3, adherent.getPrenom());
             pstmt.setString(4, adherent.getCoordonnees());
-            pstmt.setString(5, adherent.getStatut().name()); // On stocke l'ENUM en texte (ex: "ACTIF")
+            pstmt.setString(5, adherent.getStatut().name()); // On stocke l'ENUM en texte
             pstmt.setDouble(6, adherent.getMontantPenalite());
             pstmt.executeUpdate();
         }
