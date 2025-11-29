@@ -48,13 +48,13 @@ public class FenetreLogin extends JFrame {
         this.add(panel, BorderLayout.CENTER);
         this.add(btnPanel, BorderLayout.SOUTH);
         
-        // Action Connexion
+        // connexion
         btnLogin.addActionListener(e -> {
             String id = userField.getText();
             String mdp = new String(passField.getPassword());
             
             if (manager.seConnecter(id, mdp)) {
-                // Si succès : On ferme cette fenêtre et on ouvre la principale
+                // On ferme cette fenêtre et on ouvre la principale
                 this.dispose(); 
                 SwingUtilities.invokeLater(() -> {
                     new FenetrePrincipale(manager).setVisible(true);
@@ -64,7 +64,7 @@ public class FenetreLogin extends JFrame {
             }
         });
         
-        // Action Inscription
+        // l'inscription
         btnRegister.addActionListener(e -> {
             String id = userField.getText();
             String mdp = new String(passField.getPassword());
