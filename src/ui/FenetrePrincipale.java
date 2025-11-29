@@ -122,19 +122,18 @@ public class FenetrePrincipale extends JFrame {
         JTextField champRech = new JTextField(12);
         
         // FILTRE STATUT (NOUVEAU)
-        comboStatutAdh = new JComboBox<>(new String[]{"TOUT", "ACTIF", "AVEC_PENALITE", "BLOQUE"});
+        comboStatutAdh = new JComboBox<>(new String[]{"TOUT", "ACTIF", "AVEC_PENALITE"});
         
         JButton btnRech = new JButton("Rechercher");
         JButton btnAdd = new JButton("＋ Adhérent");
         JButton btnModif = new JButton("✎ Modifier");
         JButton btnHist = new JButton("📜 Historique");
-        JButton btnRefresh = new JButton("Actualiser");
 
         toolbar.add(new JLabel("Nom/ID:")); toolbar.add(champRech); 
         toolbar.add(new JLabel("Filtre:")); toolbar.add(comboStatutAdh);
         toolbar.add(btnRech);
         toolbar.add(Box.createHorizontalStrut(10));
-        toolbar.add(btnAdd); toolbar.add(btnModif); toolbar.add(btnHist); toolbar.add(btnRefresh);
+        toolbar.add(btnAdd); toolbar.add(btnModif); toolbar.add(btnHist); 
 
         String[] cols = {"ID", "Nom", "Prénom", "Coordonnées", "Statut", "Amende"};
         modeleAdherents = new DefaultTableModel(cols, 0) { public boolean isCellEditable(int r, int c) { return false; } };
@@ -145,7 +144,6 @@ public class FenetrePrincipale extends JFrame {
         Runnable actionRefresh = () -> rafraichirAdherents(champRech.getText(), (String) comboStatutAdh.getSelectedItem());
         
         btnRech.addActionListener(e -> actionRefresh.run());
-        btnRefresh.addActionListener(e -> { champRech.setText(""); comboStatutAdh.setSelectedIndex(0); actionRefresh.run(); });
         
         btnAdd.addActionListener(e -> ajouterAdherent());
         
@@ -205,7 +203,7 @@ public class FenetrePrincipale extends JFrame {
             // ... (Même logique qu'avant avec ComboBox pour le confort)
             Vector<String> ads = new Vector<>(), docs = new Vector<>();
             try {
-                for(Adherent a : manager.listerAdherents()) if(a.getStatut() != E_StatutAdherent.BLOQUE) ads.add(a.getIdAdherent()+" - "+a.getNom());
+                for(Adherent a : manager.listerAdherents()) if(a.getStatut() == E_StatutAdherent.ACTIF) ads.add(a.getIdAdherent()+" - "+a.getNom());
                 for(Document d : manager.rechercherDocuments("","TOUT")) if(!d.estEmprunte()) docs.add(d.getId()+" - "+d.getTitre());
             } catch(Exception x){}
             
